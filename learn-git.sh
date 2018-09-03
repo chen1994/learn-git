@@ -104,7 +104,41 @@
     * dev
       master
     git branch 命令会列出所有分支，*号标识当前分支
-    17.3. 切换回master分支
+    17.3. 提交learn-git.sh
+    # git add learn-git.sh
+    # git commit -m 'update learn-git.sh'
+    17.4. 切换回master分支
     # git checkout master
-master
-
+    此时查看learn-git.sh发现刚才的修改不见了，这是因为刚才的提交在dev分支上，master分支此刻的提交点没有变。
+    17.5. 将dev分支的工作成果过合并到master分支
+    # git merge dev
+    Updating ef3bacd..0464290
+    Fast-forward
+     learn-git.sh | 47 +++++++++++++++++++++++++++++++++++++++++++++++
+      1 file changed, 47 insertions(+)
+    merge用于合并指定分支到master分支
+    Fast-forward 信息代表本次合并是'快进模式',也就是直接将master指向dev当前的提交，所以速度非常快。（这只是其中一种合并方式）
+    17.6. 删除dev分支（合并完成后）
+    # git branch -d dev
+    Deleted branch dev (was 0464290).
+    # git branch
+    * master
+    17.7. 当master分支和dev分支各自有新的提交时
+    从dev切换回master分支时会提示当前master分支比远程master分支要超前一个提交：
+    # git checkout master
+    Switched to branch 'master'
+    Your branch is ahead of 'origin/master' by 1 commit.
+      (use "git push" to publish your local commits)
+    此时git无法进行快速合并，如果试图将各自的修改合并起来，就可能会有冲突
+    # git merge feature1
+    Auto-merging learn-git.sh
+    CONFLICT (content): Merge conflict in learn-git.sh
+    Automatic merge failed; fix conflicts and then commit the result.
+    此时只能手动解决冲突后再提交，使用git status可以看到是哪些文件导致了冲突
+    此时再次打开learn.git.sh查看可以看到：git用如下类似diff的分隔符来标记冲突差异部分：
+    <<<<<<< HEAD
+    # changes in master
+    =======
+    # changes in dev
+    >>>>>>> dev
+    修改后重新提交 
