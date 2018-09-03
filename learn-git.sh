@@ -106,5 +106,5 @@
     git branch 命令会列出所有分支，*号标识当前分支
     17.3. 切换回master分支
     # git checkout master
-
+master
 
