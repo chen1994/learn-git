@@ -142,3 +142,168 @@
     # changes in dev
     >>>>>>> dev
     修改后重新提交 
+    此时使用git log可以查看分支合并情况：
+    # git log --graph --pretty=oneline --abbrev-commit
+    *   b3431ee update learn-git.sh after test conflicts
+    |\
+    | * d9d5dd2 update learn-git.sh in dev
+    * | de7c9bd update learn-git.sh in master
+    |/
+    * 0464290 update learn-git.sh
+    * ef3bacd add learn-git.sh
+    最后再将dev分支删除
+18. 使用fast forward模式合并分支时，删除分支后，会丢掉分支信息。
+    如果强制禁用Fast forward模式，git在merge时会生成一个新的commit，这样就可以从分支历史上看出分支信息。
+    # git merge --no-ff -m 'merge with no-ff' dev
+    Merge made by the 'recursive' strategy.
+     learn-git.sh | 13 +++++++++++++
+      1 file changed, 13 insertions(+)
+    因为本次合并要创建一个新的commit，所以使用-m参数把commit的描述写进去。
+    查看分支历史：
+    # git log --graph --pretty=oneline --abbrev-commit
+    *   a5beb66 merge with no-ff
+    |\
+    | * 15e3565 update learn-git.sh in dev
+    |/
+    *   b3431ee update learn-git.sh after test conflicts
+    正式作业的时候，应该有个master分支，用于发布新版本，平时不在上面干活；
+    再有个dev分支，所有人都在dev分支上干活，每个人都有自己的分支，时不时将自己的分支网dev分支上合并就行了。
+19. bug分支
+    当你在自己分支上的工作进行到一半，还没有提交到dev分支时，突然出现一个bug,要你紧急修复，可以为bug创建一个新的临时分支来修复，修复后合并分支，再删除临时分支
+    问题就是当前在dev分支上的工作还没有结束（工作还没完成，没法提交）
+    git提供了一个stash功能，将当前工作现场隐藏起来，等以后恢复现场后继续工作：
+    # git branch
+    * dev
+      master
+    # git status
+    ...
+    #       modified:   learn-git.sh
+    ...
+    当前工作现场的文件还没有提交
+    # git stash
+    Saved working directory and index state WIP on master: a5beb66 merge with no-ff
+    HEAD is now at a5beb66 merge with no-ff
+    # git status
+    此时再看工作区就是干净的，可以放心的创建分支来修复bug
+    首先需要确定要在哪个分支上修复bug，比如要在master分支上修复:
+    # git checkout master
+    创建临时bug修复分支：
+    # git checkout -b bug-1
+    xxx进行bug修复工作，修复完成后commit
+    回到master分支merge:
+    # git checkout master
+    # git merge --no-ff -m 'merge bug fix bug1' bug-1
+    再回到dev分支恢复工作现场：
+    # git checkout dev
+    # git stash list
+    stash@{0}: WIP on dev: 15e3565 update learn-git.sh in dev
+    工作现场还在，只是git把stash内容存在某个地方了，需要恢复，有两种办法恢复：
+    1. 恢复工作现场，但不删除stash内容
+    # git stash apply
+    ...
+    #          modified:   learn-git.sh
+    ...
+    # git stash list
+    stash@{0}: WIP on dev: 15e3565 update learn-git.sh in dev
+    需要手动删除stash：
+    # git stash drop
+    Dropped refs/stash@{0} (e82485e7f6d2b8aa1634bb9b03e55eecc6fcee41)
+    2. 恢复的同时将stash内容一起删除
+    # git stash pop
+    指定stash：
+    # git stash pop stash@{0}
+20. 删除临时分支及临时分支中未合并的内容
+    在开发新功能时，一般会新建一个feature分支来开发，完了再合并到dev分支
+    但是当feature分支中已经commit，还没有合并到dev分支时，却通知该新功能不需要了，此时这个新功能的内容也不能保存得删除
+    使用git branch -d feature是不能删掉的
+    # git branch -d feature1
+    error: The branch 'feature1' is not fully merged.
+    If you are sure you want to delete it, run 'git branch -D feature1'.
+    得用-D强制删除：
+    # git branch -D feature1
+    Deleted branch feature1 (was fd168cd).
+21. 查看远程库信息
+    # git remote
+    origin
+    # git remote -v
+    origin  https://github.com/chen1994/learn-git.git (fetch)
+    origin  https://github.com/chen1994/learn-git.git (push)
+    如果没有推送权限，就看不到push
+22. 推送分支
+    将本地所有的commit推送到origin库
+    # git push origin master
+    推送其他分支（如dev）：
+    # git push origin dev
+23. 抓取分支
+    多人协作开发时，小伙伴使用另一台电脑/同一台电脑的不同目录，需先从远程克隆：
+    # git clone https://github.com/chen1994/learn-git.git
+    # git branch
+    * master
+    默认只能看到本地的master分支，如果要在dev分支上开发，就必须创建远程origin的dev分支到本地：
+    # git checkout -b dev origin/dev
+    现在小伙伴就可以在dev上进行修改和推送
+    # git add xxx, # git commit -m 'xxx', # git push origin dev
+    因为小伙伴已经向origin/dev分支推送了他的提交，如果碰巧你对同样的文件做了修改，此时你再推送的时候失败：
+    # git push origin dev
+    Username for 'https://github.com': chen1994
+    Password for 'https://chen1994@github.com':
+    To https://github.com/chen1994/learn-git.git
+     ! [rejected]        dev -> dev (fetch first)
+     error: failed to push some refs to 'https://github.com/chen1994/learn-git.git'
+     hint: Updates were rejected because the remote contains work that you do
+     hint: not have locally. This is usually caused by another repository pushing
+     hint: to the same ref. You may want to first merge the remote changes (e.g.,
+     hint: 'git pull') before pushing again.
+     hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+    根据提示使用git pull将最新的提交从origin/dev抓下来，在本地合并，解决冲突后再推送：
+    # git pull 
+    There is no tracking information for the current branch.
+    Please specify which branch you want to merge with.
+    See git-pull(1) for details
+
+        git pull <remote> <branch>
+
+    If you wish to set tracking information for this branch you can do so with:
+
+        git branch --set-upstream-to=origin/<branch> dev
+    根据提示，设置远程分支与本地分支的连接：
+    # git branch --set-upstream-to=origin/dev dev
+    Branch dev set up to track remote branch dev from origin.
+    再重新pull，如果pull时有冲突，再手动解决冲突后再push
+    如果git pull提示no tracking information，则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream-to=origin/dev dev
+24. 将分支提交历史显示为一条直线
+    # git log --graph --pretty=oneline --abbrev-commit
+    *   ec443cf Merge branch 'dev' of https://github.com/chen1994/learn-git into dev
+    |\
+    | * 3ee2958 update by another pattner,add title
+    * | 0b2dfd9 update learn-git.sh
+    * | 3700393 update learn-git.sh
+    |/
+    ...
+    这是由于多个人在同一个分支上操作，有些冲突或者合并操作，导致历史不是一条直线
+    这样看起来不方便，使用git rebase命令，将历史变成一条直线：
+    # git rebase
+25. 清空git log
+    方法1：git reset
+        --soft (仅删除log，保留提交所做的更改)
+        删除最近一次提交的log：
+        # git reset --soft HEAD^
+        删除最近三次提交的log：
+        # git reset --soft HEAD~3
+        --hard (删除log的同时不保留删除记录所做的更改)
+    方法2：git rebase（可用于删除中间的记录）
+        将master分支删除最近三个提交
+        # git rebase --onto master~3 master~1 master        
+26. 清空git reflog
+    # git reflog expire --expire=now --all
+27. 删除远程库文件
+    # git rm -r -n --cached 文件/文件夹名称
+    -n这个参数不会删除任何文件，只是打印出文件列表预览
+    确认无误后，再删除：
+    # git rm -r --cached 文件/文件夹名称
+    提交到本地，并添加提交说明
+    # git commit -m 'rm bug1'
+    # git push origin master
+28.
+29.
+30.
