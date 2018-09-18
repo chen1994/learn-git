@@ -18,7 +18,7 @@
     # git diff readme.txt
     git log查看历史记录
     # git log
-    只显示commit id和提交的说明（commit -m)
+    只显示commit id和提交的说明（commit -m）
     # git log --pretty=oneline
 6. 版本回退：
     # git reset --hard HEAD^
@@ -304,6 +304,7 @@
     提交到本地，并添加提交说明
     # git commit -m 'rm bug1'
     # git push origin master
-28.
+28. 修改最近一次的提交
+	# git commit --amend
 29.
 30.
