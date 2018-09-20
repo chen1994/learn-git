@@ -1,0 +1,23 @@
+1. 应用层
+	http, ftp
+2. 传输层
+	tcp, udp
+3. 网络层
+	ip
+4. 数据链路层
+	1. 为IP模块 发送和接收IP数据报
+	2. 为ARP模块 发送ARP请求和接收ARP应答
+	3. 为RARP 发送RARP请求和接收RARP应答
+
+	ARP协议：地址解析协议，IP转换MAC地址
+	RARP协议：逆地址解析协议
+	这一层还有很多别的协议：以太网协议（Ethernet网卡），PPP协议等
+	当主机要发送一个IP包时，首先会查一下自己的ARP高速缓存（IP-MAC地址对应缓存），如果查询的IP-MAC值对不存在，则会向网络发送一个ARP协议广播包，广播包里有查询的IP，收到广播包的主机会查询自己的IP，如果发现自己符合条件，就会准备好一个包含自己MAC地址的ARP包传送给发送ARP广播的主机，广播主机拿到ARP包后会更新自己的ARP缓存，之后用新的ARP缓存数据准备好数据链路层的数据包发送工作。
+
+查看arp缓存信息：
+# arp -a
+pc150049.hoperun.com (10.20.74.23) at 8c:dc:d4:25:8f:d1 [ether] on enp0s3
+gateway (10.20.75.254) at 3c:8c:40:c6:64:01 [ether] on enp0s3
+
+高速缓存是有时限的，一般是20分钟。	
+https://www.cnblogs.com/fengzanfeng/articles/1339347.html
