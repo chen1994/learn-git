@@ -88,9 +88,9 @@ Thank you!
 		
 		int main(void)
 		{
-		        printf ("\nPlease enter the degree angle (ex>= 90): " );
-		        scanf  ("%f", &angle );
-		        mysin( angle );
+		        printf("\nPlease enter the degree angle (ex>= 90): ");
+		        scanf("%f", &angle);
+		        mysin(angle);
 		}
 		
 		==> mysin.c <==
@@ -102,8 +102,8 @@ Thank you!
 		void mysin(void)
 		{
 		        float value;
-		        value = sin ( angle / 180. * pi );
-		        printf ("\nThe Sin is: %5.2f\n",value);
+		        value = sin(angle / 180. * pi);
+		        printf("\nThe Sin is: %5.2f\n",value);
 		
 		==> makefile <==
 		LIBS = -lm
@@ -121,5 +121,14 @@ Thank you!
 		
 		The Sin is:  1.00
 		---------------------------------------------------------------
-		注：数学函数库使用的是libm.so 这个函数库，编译的时候要将这个函数库纳进去。libm.so 在编译的写法上，使用的是 -lm （lib 简写为 l）。
-		
+		注：1. 数学函数库使用的是libm.so 这个函数库，编译的时候要将这个函数库纳进去。libm.so 在编译的写法上，使用的是 -lm （lib 简写为 l）。
+			2. 变量可以在命令行直接提供：
+				# CFLAGS="-Wall" make clean main
+			3. 也可以直接使用shell的环境变量
+				变量的优先级：make命令行 > Makefile内 > shell原有的环境变量
+			4. makefile中的特殊变量：$@
+				$@代表当前标的target：
+				---------------------------------------------------
+				main: ${OBJS}
+					gcc -o $@ ${OBJS} ${LIBS}	<== 这个$@就是main
+				---------------------------------------------------

@@ -87,4 +87,30 @@ CLEAN   include/config include/generated
 	Timer frequency （300 HZ）	kernel针对某个事件立即回应的速度
 	默认是desktop的1000HZ，用于server300HZ就够了
 · Power management and ACPI options	电源管理功能
-	
+· Bus options （PCI etc.）	总线(bus)相关选项
+	PCI Stub driver	虚拟化相关模块	
+· Executable file formats / Emulations	编译后可执行文件的格式
+	<M> IA32 a.out support
+	[*] x32 ABI for 64-bit mode	防止有些比较旧的软件，还需要仿真32位的功能
+· Networking support	kernel的网络功能
+· Device Drivers	各个设备的驱动程序
+· File systems	文件系统的支持
+· Kernel hacking	kernel骇客
+· Security Options	信息安全
+· Cryptographic API	密码应用
+
+6. 编译kernel与kernel模块
+查看所有可用的编译参数：
+# make help
+基本功能如下：
+	# make vmlinux	未经压缩的kernel
+	# make modules	仅kernel模块
+	# make bzImage	经压缩过的kernel（默认）
+	# make all		进行上述三个动作
+依次进行如下操作：
+# make -j 4 clean					<==先清除暂存盘
+# make -j 4 bzImage					<==先编译核心
+# make -j 4 modules					<==再编译模块
+# make -j 4 clean bzImage modules	<==连续动作！
+注：-j 4意思是让本机上的4个CPU同时进行编译工作（本机上有至少4个CPU（包括超线程））
+
