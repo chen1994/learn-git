@@ -33,7 +33,7 @@ CLEAN   scripts/kconfig
 CLEAN   include/config include/generated
 注：make mrproper会将以前进行过的核心功能选择文件也删除，所以只有第一次进行kernel编译前才进行这个动作，之后删除前一次编译过程的残留数据请使用：make clean(仅会删除类似目标文件之类的编译过程产生的中间文件，而不会删除配置文件)
 
-5. 挑选核心功能
+5. 配置内核（挑选功能模块）
 /boot下面的config-xxx文件就是当前kernel的核心功能列表文件，核心功能的挑选最后会在/usr/src/kernels/linux-xxx/下面生成一个.config的隐藏文件，该文件就是将来的/boot/config-xxx
 生成.config的方式：
 · make menuconfig	最常使用的，是文字模式下面可以显示类似图形接口的方式，
@@ -110,7 +110,31 @@ CLEAN   include/config include/generated
 依次进行如下操作：
 # make -j 4 clean					<==先清除暂存盘
 # make -j 4 bzImage					<==先编译核心
+	开始生成bzImage映像文件，需要10多分钟左右，正常情况下不会有什么问题，
+	编译完成后提示bzImage文件在 arch/x86/boot 目录下
 # make -j 4 modules					<==再编译模块
-# make -j 4 clean bzImage modules	<==连续动作！
-注：-j 4意思是让本机上的4个CPU同时进行编译工作（本机上有至少4个CPU（包括超线程））
+	大概需要50分钟左右，应该也不会有什么问题，可能会有一些警告，可以忽视，
+	# make -j 4 clean bzImage modules	<==连续动作！
+	注：-j 4意思是让本机上的4个CPU同时进行编译工作（本机上有至少4个CPU（包括超线程））
+然后把散落在各个文件夹下的.o文件组装起来
+# make modules_install
+	组装完成后，会把文件放在/lib/modules/ 下，文件名为对应的版本号
+查看：
+# ls /lib/modules
+然后把存放模块文件的目录打包成一个文件，使用mkinitrd命令，输入(主要后者不要输入成/lib/modules/4.18.8)
+# mkinitrd rd-4.18.8 4.18.8
+前者为生成文件的名字，后者为模块文件存在的目录，需要几分钟，这样文件包rd-4.18.8就在当前文件目录上产生了。
 
+7. 安装内核
+安装内核之前需要把生成的bzImage和模块文件包rd-4.18.8拷贝到/boot目录下，这样启动的时候才能够选择这个内核启动
+
+先拷贝bzImage，输入(如# cp arch/$cpu/boot/bzImage /boot/vmlinux-$version)
+然后拷贝模块文件包，输入# cp rd-$version /boot/，version为对应版本号
+然后修改/etc/grub2.conf，才可以在启动时选择这个新内核
+# vim /etc/grub2.conf
+加入如下menu：
+menuentry 'kernel 4.18.8' {
+    set root='hd0,msdos1'
+    linux16 /vmlinuz-4.18.8 root=UUID=de09153b-34db-4bea-ba95-348065e1a13b ro crashkernel=auto rhgb quiet LANG=en_US.UTF-8
+    initrd16 /rd-4.18.8
+}
